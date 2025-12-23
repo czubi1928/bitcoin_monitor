@@ -1,0 +1,10 @@
+[project]
+name = "bitcoin_monitor"
+version = "0.1.0"
+description = "Portfolio project"
+requires-python = ">=3.13"
+readme = "README.md"
+#dependencies = ["requests>=2.28.0"]
+
+#[tool.ruff]
+#line-length = 88
