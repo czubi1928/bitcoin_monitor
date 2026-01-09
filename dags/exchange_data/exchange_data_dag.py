@@ -3,8 +3,10 @@ import datetime
 import json
 import logging
 import os
+from datetime import timedelta
 from typing import Optional, Tuple, Any
 
+import pendulum
 import requests
 import snowflake.connector
 from airflow.sdk import dag, task
@@ -15,17 +17,17 @@ from snowflake.connector.connection import SnowflakeConnection
 logger = logging.getLogger(__name__)
 
 # --- Define constants ---
+# CoinCap API configuration
 COINCAP_API_URL = 'https://rest.coincap.io/v3'
 COINCAP_API_KEY = os.getenv('COINCAP_API_KEY')
 COINCAP_API_HEADERS = {'Authorization': f'Bearer {COINCAP_API_KEY}'}
+COINCAP_API_ENDPOINTS = ['assets', 'exchanges', 'markets', 'rates']
 COINCAP_API_LIMIT = 10
 
+# Snowflake configuration
 SNOWFLAKE_USER = os.getenv('SNOWFLAKE_USER')
-SNOWFLAKE_PASSWORD = os.getenv('SNOWFLAKE_PASSWORD')
 SNOWFLAKE_ACCOUNT = os.getenv('SNOWFLAKE_ACCOUNT')
 PRIVATE_KEY_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'snowflake_tf_snow_key.p8'))
-SNOWFLAKE_STRUCTURE_SQL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                            'snowflake_warehouse_structure.sql')
 SNOWFLAKE_CONFIG = {
     'warehouse': 'COINCAP_WAREHOUSE',
     'database': 'COINCAP_DATABASE',
@@ -38,7 +40,7 @@ SNOWFLAKE_CONFIG = {
 # --- Define helper functions ---
 def _get_snowflake_conn(warehouse: str = None, database: str = None, schema: str = None) -> SnowflakeConnection | None:
     """
-    Establish a connection to the warehouse database.
+    Establish a connection to Snowflake using JWT authentication.
     :param warehouse: The warehouse to connect to, default is None.
     :param database: The database to connect to, default is None.
     :param schema: The schema to connect to, default is None.
@@ -97,101 +99,49 @@ def _execute_query(conn: SnowflakeConnection, query: str, params: Optional[Tuple
         raise e
 
 
-# def _read_and_template_sql() -> list[str]:
-#     """
-#     Reads the SQL file, applies configuration templating, and splits commands.
-#     :return: A list of SQL commands.
-#     """
-#
-#     # Read the SQL template file
-#     with open(SNOWFLAKE_STRUCTURE_SQL_PATH, 'r') as f:
-#         sql_template = f.read()
-#
-#     # Apply templating using Python's format method
-#     templated_script = sql_template.format(**SNOWFLAKE_CONFIG)
-#
-#     # Split the script by semicolon, filtering out comments and empty lines
-#     raw_commands = templated_script.split(';')
-#
-#     commands = []
-#     for command in raw_commands:
-#         # Strip leading/trailing whitespace (including newlines)
-#         cleaned_command = command.strip()
-#
-#         # Only include commands that are not empty
-#         # This filters out results from comments, empty lines, or trailing semicolons.
-#         if cleaned_command:
-#             commands.append(cleaned_command)
-#
-#     return commands
-
-
 # --- Define the DAG ---
 @dag(
     dag_id='exchange_data_dag',
-    description='The DAG to pull data from CoinCap API and load it into our warehouse.',
-    schedule='*/1 * * * *',  # At every minute
-    # retries=3,
-    # retry_delay=timedelta(seconds=30),
-    tags=['data_engineer_team', 'load'],
+    description='ELT: Pull raw data from CoinCap API and load to Snowflake.',
+    # Always set a static start_date. Dynamic dates (pendulum.now) can cause scheduling bugs.
+    start_date=pendulum.datetime(2023, 1, 1, tz="UTC"),
+    schedule='*/1 * * * *',
+    tags=['data_engineer_team', 'bronze', 'extract', 'load'],
     catchup=False,
-    dagrun_timeout=None,
+    # Best Practice: Set default args for retries on API failures
+    default_args={
+        'retries': 3,
+        'retry_delay': timedelta(seconds=30),
+        'owner': 'data_engineering'
+    },
+    dagrun_timeout=timedelta(minutes=10),  # Fail if stuck
 )
 def exchange_data_dag():
     # --- Define tasks ---
-    # @task(task_id='create_warehouse_structure')
-    # def create_warehouse_structure_task() -> None:
-    #     """
-    #     Create the necessary warehouse structure if it does not exist.
-    #     :return: None.
-    #     """
-    #     # Create Snowflake connection
-    #     conn = _get_snowflake_conn()
-    #
-    #     # If connection failed, fail the task to stop the DAG run
-    #     if conn is None:
-    #         logger.error('Cannot create warehouse structure without a database connection...')
-    #         return
-    #
-    #     # Define SQL commands to create database, schema, and tables etc.
-    #     commands = _read_and_template_sql()
-    #
-    #     # Execute each command
-    #     for command in commands:
-    #         _execute_query(conn, command)
-
     @task(task_id='extract_data_from_api', do_xcom_push=True)
-    def extract_data_from_api_task() -> dict:
+    def extract_data_from_api_task(endpoint: str) -> dict:
         """
-        Extract data from CoinCap API and load into warehouse.
-        :return: A dictionary containing extracted data.
+        Extract data from CoinCap API.
+        :param endpoint: The API endpoint to extract data from.
+        :return: A dictionary containing the extracted data.
         """
-        # Extract data from CoinCap API
-        assets = _get_request(f'assets')
-        exchanges = _get_request(f'exchanges')
-        markets = _get_request(f'markets')
-        rates = _get_request(f'rates')
-
-        data = {
-            'data': {
-                'assets': assets,
-                'exchanges': exchanges,
-                'markets': markets,
-                'rates': rates,
-            }
-        }
-
-        return data
+        # Make and return the API request result
+        return {endpoint: _get_request(endpoint)}
 
     @task(task_id='load_data_to_warehouse')
-    def load_data_to_warehouse_task(**context) -> None:
+    def load_data_to_warehouse_task(extracted_data: list[dict]) -> None:
         """
-        Load data into warehouse.
-        :param context: The context containing extracted data.
+        Load extracted data into Snowflake.
+        :param extracted_data: The list of results aggregated from the upstream mapped tasks.
         :return: None.
         """
-        # Pull data from XCom
-        data = context['ti'].xcom_pull(task_ids='extract_data_from_api', key='return_value')
+        data_dict = {}
+        for item in extracted_data:
+            data_dict.update(item)
+
+        if not data_dict:
+            logger.warning("No data received from upstream extraction tasks. Skipping load.")
+            return
 
         # Create Snowflake connection
         conn = _get_snowflake_conn(
@@ -203,11 +153,17 @@ def exchange_data_dag():
             raise
 
         # Process each data entity
-        for table_name, content in data['data'].items():
+        for table_name, content in data_dict.items():
             snowflake_table_name = table_name.upper()
             logger.info(f'Inserting data into "{snowflake_table_name}" table...')
-            ts_val = datetime.datetime.fromtimestamp(content['timestamp'] / 1000.0)
-            json_val = json.dumps(content['data'])
+
+            try:
+                # Assuming the CoinCap response has 'timestamp' and 'data' fields
+                ts_val = datetime.datetime.fromtimestamp(content['timestamp'] / 1000.0)
+                json_val = json.dumps(content['data'])
+            except KeyError as e:
+                logger.error(f"API response for {table_name} missing required key: {e}. Skipping.")
+                continue
 
             sql = f'''
                 INSERT INTO {snowflake_table_name} ("ingest_time", "api_response") 
@@ -218,46 +174,15 @@ def exchange_data_dag():
             # Pass values as a tuple in the second argument
             _execute_query(conn, sql, (ts_val, json_val))
 
-            try:
-                logger.debug(f'Inserting timestamp: {ts_val}, data: {json_val[:100]}...')  # Log first 100 chars of data
-            except Exception as e:
-                logger.error(f'Failed to insert data into {snowflake_table_name}: {e}')
-                continue
-
-            # records = content['data']
-            #
-            # # Skip loading if no records
-            # if not records:
-            #     logger.warning(f'Skipping "{table_name}" dataset - no records found.')
-            #     continue
-            #
-            # # Create DataFrame
-            # df = pd.DataFrame(records)
-            # df['timestamp'] = content['timestamp']
-            #
-            # if 'tokens' in df.columns:
-            #     # Use json.dumps to convert Python objects (like lists of dicts)
-            #     # into valid JSON strings (which map to Snowflake VARCHAR/VARIANT).
-            #     df['tokens'] = df['tokens'].apply(
-            #         lambda x: json.dumps(x) if pd.notna(x) and x is not None else None
-            #     )
-            #
-            # df.columns = [col.upper() for col in df.columns]
-            #
-            # # Load data into Snowflake
-            # success, nchunks, nrows, _ = write_pandas(conn, df, snowflake_table_name)
-            # logger.debug(
-            #     f'Success: {success}, Chunks: {nchunks}, Rows: {nrows} inserted into "{snowflake_table_name}".')
-
         # Close the database connection
         conn.close()
 
     # --- Define task dependencies ---
-    chain(
-        # create_warehouse_structure_task(),
-        extract_data_from_api_task(),
-        load_data_to_warehouse_task()
-    )
+    extracted_data_list = extract_data_from_api_task.expand(endpoint=COINCAP_API_ENDPOINTS)
+
+    # Pass the output of the mapped task directly as the argument to the downstream task.
+    # This automatically handles XCom aggregation.
+    load_data_to_warehouse_task(extracted_data=extracted_data_list)
 
 
 exchange_data_dag()
