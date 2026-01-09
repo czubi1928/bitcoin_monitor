@@ -105,7 +105,7 @@ def _execute_query(conn: SnowflakeConnection, query: str, params: Optional[Tuple
     description='ELT: Pull raw data from CoinCap API and load to Snowflake.',
     # Always set a static start_date. Dynamic dates (pendulum.now) can cause scheduling bugs.
     start_date=pendulum.datetime(2023, 1, 1, tz="UTC"),
-    schedule='*/1 * * * *',
+    schedule='*/5 * * * *',
     tags=['data_engineer_team', 'bronze', 'extract', 'load'],
     catchup=False,
     # Best Practice: Set default args for retries on API failures
