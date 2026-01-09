@@ -1,5 +1,7 @@
 Register on https://pro.coincap.io/dashboard
+prerequisites: Api, terraform installed
 
+prerequisites: step "Create a Service User for Terraform", "Setup Terraform Authentication" from "terraforming-snowflake"
 
 ---
 
@@ -15,6 +17,7 @@ data from a public API, processes it, and visualizes the trends using interactiv
 # Technologies Used
 - Python 3.13
 - - Pandas
+- Terraform
 - Docker
 - Airflow
 - dbt
@@ -22,6 +25,9 @@ data from a public API, processes it, and visualizes the trends using interactiv
 
 # Prerequisites
 
+- Python 3.13 installed on your machine.
+- Docker installed for containerization.
+- Terraform installed for infrastructure management.
 - register for a free API key at [CoinCap Pro](https://pro.coincap.io/dashboard) to access the CoinCap API.
 
 # References
