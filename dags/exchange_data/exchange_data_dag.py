@@ -10,7 +10,6 @@ import pendulum
 import requests
 import snowflake.connector
 from airflow.sdk import dag, task
-from airflow.sdk.bases.operator import chain
 from snowflake.connector.connection import SnowflakeConnection
 
 # --- Set up logging ---
@@ -21,7 +20,7 @@ logger = logging.getLogger(__name__)
 COINCAP_API_URL = 'https://rest.coincap.io/v3'
 COINCAP_API_KEY = os.getenv('COINCAP_API_KEY')
 COINCAP_API_HEADERS = {'Authorization': f'Bearer {COINCAP_API_KEY}'}
-COINCAP_API_ENDPOINTS = ['assets', 'exchanges', 'markets', 'rates']
+COINCAP_API_ENDPOINTS = ['ASSETS', 'EXCHANGES', 'MARKETS', 'RATES']
 COINCAP_API_LIMIT = 10
 
 # Snowflake configuration
@@ -104,7 +103,7 @@ def _execute_query(conn: SnowflakeConnection, query: str, params: Optional[Tuple
     dag_id='exchange_data_dag',
     description='ELT: Pull raw data from CoinCap API and load to Snowflake.',
     # Always set a static start_date. Dynamic dates (pendulum.now) can cause scheduling bugs.
-    start_date=pendulum.datetime(2023, 1, 1, tz="UTC"),
+    start_date=pendulum.datetime(2023, 1, 1, tz='UTC'),
     schedule='*/5 * * * *',
     tags=['data_engineer_team', 'bronze', 'extract', 'load'],
     catchup=False,
@@ -140,7 +139,7 @@ def exchange_data_dag():
             data_dict.update(item)
 
         if not data_dict:
-            logger.warning("No data received from upstream extraction tasks. Skipping load.")
+            logger.warning('No data received from upstream extraction tasks. Skipping load.')
             return
 
         # Create Snowflake connection
@@ -162,11 +161,11 @@ def exchange_data_dag():
                 ts_val = datetime.datetime.fromtimestamp(content['timestamp'] / 1000.0)
                 json_val = json.dumps(content['data'])
             except KeyError as e:
-                logger.error(f"API response for {table_name} missing required key: {e}. Skipping.")
+                logger.error(f'API response for {table_name} missing required key: {e}. Skipping.')
                 continue
 
             sql = f'''
-                INSERT INTO {snowflake_table_name} ("ingest_time", "api_response") 
+                INSERT INTO {snowflake_table_name} ('INGEST_TIMESTAMP', 'API_RESPONSE') 
                 SELECT %s, PARSE_JSON(%s)
             '''
             logger.info(f'Executing SQL: {sql} with timestamp: {ts_val} and data length: {len(json_val)}')
