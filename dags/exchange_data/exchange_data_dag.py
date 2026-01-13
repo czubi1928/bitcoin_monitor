@@ -30,9 +30,7 @@ PRIVATE_KEY_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 SNOWFLAKE_CONFIG = {
     'warehouse': 'COINCAP_WAREHOUSE',
     'database': 'COINCAP_DATABASE',
-    'schema_bronze': 'COINCAP_BRONZE_SCHEMA',
-    'schema_silver': 'COINCAP_SILVER_SCHEMA',
-    'schema_gold': 'COINCAP_GOLD_SCHEMA',
+    'schema_bronze': 'BRONZE_SCHEMA'
 }
 
 
@@ -165,7 +163,7 @@ def exchange_data_dag():
                 continue
 
             sql = f'''
-                INSERT INTO {snowflake_table_name} ('INGEST_TIMESTAMP', 'API_RESPONSE') 
+                INSERT INTO {snowflake_table_name} (INGEST_TIMESTAMP, API_RESPONSE) 
                 SELECT %s, PARSE_JSON(%s)
             '''
             logger.info(f'Executing SQL: {sql} with timestamp: {ts_val} and data length: {len(json_val)}')
