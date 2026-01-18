@@ -4,7 +4,7 @@
 
 resource "snowflake_warehouse" "coincap_warehouse" {
   name           = "COINCAP_WAREHOUSE"
-  warehouse_size = "XSMALL"
+  warehouse_size = "X-Large"
   auto_suspend   = 60
   auto_resume    = true
 }

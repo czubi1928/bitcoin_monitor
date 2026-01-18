@@ -77,7 +77,7 @@ x-airflow-common:
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     # Best practice: Move secrets/keys to Airflow Variables or Connections.
-#    AIRFLOW_VAR_{VARIABLE_NAME}:
+    # AIRFLOW_VAR_{VARIABLE_NAME}: a
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -93,6 +93,17 @@ x-airflow-common:
       condition: service_healthy
 
 services:
+  dbt-snowflake:
+    image: ghcr.io/dbt-labs/dbt-snowflake:1.9.latest
+    network_mode: host
+    working_dir: /usr/app
+    volumes:
+      - ./dbt:/usr/app
+      - ./dbt/profiles.yml:/root/.dbt/profiles.yml
+      - ./snowflake_tf_snow_key.p8:/usr/app/snowflake_tf_snow_key.p8
+    env_file:
+      - .env
+
   postgres:
     image: postgres:16
     environment:
