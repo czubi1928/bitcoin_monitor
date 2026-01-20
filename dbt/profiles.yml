@@ -1,0 +1,17 @@
+# https://docs.getdbt.com/docs/core/connect-data-platform/snowflake-setup
+
+bitcoin_monitor:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      role: SYSADMIN
+      authenticator: SNOWFLAKE_JWT
+      private_key_path: snowflake_tf_snow_key.p8
+      database: COINCAP_DB
+      warehouse: COINCAP_WH
+      schema: STAGING
+      threads: 4
+      client_session_keep_alive: False

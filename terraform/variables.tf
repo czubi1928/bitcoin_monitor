@@ -21,7 +21,7 @@ variable "private_key_path" {
 
 variable "bronze_table_names" {
   type    = list(string)
-  default = ["ASSETS", "EXCHANGES", "MARKETS", "RATES"]
+  default = ["ASSET_SNAPSHOTS"] #"EXCHANGES", "MARKETS", "RATES"]
 }
 
 variable "shared_bronze_columns" {

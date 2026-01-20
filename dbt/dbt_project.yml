@@ -1,0 +1,38 @@
+name: bitcoin_monitor
+version: '1.0.0'
+config-version: 2
+
+profile: bitcoin_monitor
+
+model-paths: [ "models" ]
+analysis-paths: [ "analyses" ]
+test-paths: [ "tests" ]
+seed-paths: [ "seeds" ]
+macro-paths: [ "macros" ]
+snapshot-paths: [ "snapshots" ]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  bitcoin_monitor:
+    # --- Staging Layer ---
+    # Materialized as views because they are simple cleaning steps
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags: [ "api_data" ]
+
+    # --- Intermediate Layer ---
+    # Materialized as tables because they contain complex window functions (LAG)
+    intermediate:
+      +materialized: table
+      +schema: intermediate
+
+    # --- Marts Layer ---
+    # Final tables for BI
+    marts:
+      +materialized: table
+      +schema: mart
+

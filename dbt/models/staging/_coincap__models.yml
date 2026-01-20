@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_coincap__assets
+    description: "Cleaned asset data."
+    columns:
+      - name: asset_id
+        tests:
+          - not_null
+          # Note: We don't use 'unique' here because this is time-series data.
+          # The same asset_id appears every 5 minutes.
+
+      - name: price_usd
+        tests:
+          - not_null
+          # A custom test to ensure prices aren't negative (bad data)
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+  - name: fct_asset_history
+    description: "Final mart for asset history."
+    columns:
+      - name: asset_rank
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 100 # Assuming we only care about top 100

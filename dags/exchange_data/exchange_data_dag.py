@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 COINCAP_API_URL = 'https://rest.coincap.io/v3'
 COINCAP_API_KEY = os.getenv('COINCAP_API_KEY')
 COINCAP_API_HEADERS = {'Authorization': f'Bearer {COINCAP_API_KEY}'}
-COINCAP_API_ENDPOINTS = ['ASSETS', 'EXCHANGES', 'MARKETS', 'RATES']
+COINCAP_API_ENDPOINTS = ['assets']
 COINCAP_API_LIMIT = 10
 
 # Snowflake configuration
@@ -28,9 +28,9 @@ SNOWFLAKE_USER = os.getenv('SNOWFLAKE_USER')
 SNOWFLAKE_ACCOUNT = os.getenv('SNOWFLAKE_ACCOUNT')
 PRIVATE_KEY_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'snowflake_tf_snow_key.p8'))
 SNOWFLAKE_CONFIG = {
-    'warehouse': 'COINCAP_WAREHOUSE',
-    'database': 'COINCAP_DATABASE',
-    'schema_bronze': 'BRONZE_SCHEMA'
+    'warehouse': 'COINCAP_WH',
+    'database': 'COINCAP_DB',
+    'schema_bronze': 'RAW'
 }
 
 
@@ -151,25 +151,26 @@ def exchange_data_dag():
 
         # Process each data entity
         for table_name, content in data_dict.items():
-            snowflake_table_name = table_name.upper()
+            snowflake_table_name = f'{table_name.upper()}_SNAPSHOTS'
             logger.info(f'Inserting data into "{snowflake_table_name}" table...')
 
             try:
                 # Assuming the CoinCap response has 'timestamp' and 'data' fields
                 ts_val = datetime.datetime.fromtimestamp(content['timestamp'] / 1000.0)
                 json_val = json.dumps(content['data'])
+                sfn_val = f'{table_name}_{content['timestamp']}.json'
             except KeyError as e:
                 logger.error(f'API response for {table_name} missing required key: {e}. Skipping.')
                 continue
 
             sql = f'''
-                INSERT INTO {snowflake_table_name} (INGEST_TIMESTAMP, API_RESPONSE) 
-                SELECT %s, PARSE_JSON(%s)
+                INSERT INTO {snowflake_table_name} (LOAD_TIMESTAMP, RAW_DATA, SOURCE_FILE_NAME) 
+                SELECT %s, PARSE_JSON(%s), %s
             '''
             logger.info(f'Executing SQL: {sql} with timestamp: {ts_val} and data length: {len(json_val)}')
 
             # Pass values as a tuple in the second argument
-            _execute_query(conn, sql, (ts_val, json_val))
+            _execute_query(conn, sql, (ts_val, json_val, sfn_val))
 
         # Close the database connection
         conn.close()

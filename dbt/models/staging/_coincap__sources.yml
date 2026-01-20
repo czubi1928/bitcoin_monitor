@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: coincap
+    database: COINCAP_DB
+    schema: RAW
+    tables:
+      - name: assets_snapshots
+        description: "Raw 5-minute snapshots of crypto assets from CoinCap API."
+        columns:
+          - name: LOAD_TIMESTAMP
+            description: "The time the data was ingested."
+          - name: RAW_DATA
+            description: "JSON variant column containing the assets array."
+          - name: SOURCE_FILE_NAME
+            description: "Name of the source file from which the data was ingested."
