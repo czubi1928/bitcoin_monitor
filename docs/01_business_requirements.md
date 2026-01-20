@@ -27,5 +27,5 @@ rather than just price tracking.
 
 ## Data Scope
 
-- **Entities:** Top N Assets by Market Cap.
+- **Entities:** Top 10 Assets by Market Cap.
 - **History:** Continuous 5-minute intervals.

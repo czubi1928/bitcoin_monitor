@@ -2,9 +2,9 @@
 
 ## Single Endpoint Scope
 
-- **Decision:** We will exclusively use the `/v2/assets` endpoint.
-- **Reasoning:** We previously considered `/rates` and `/exchanges`. These were discarded to reduce scope and "Data
-  Swamp" risk. `/assets` provides 90% of the required business value (Price, Volume, Cap, Rank).
+- **Decision:** We will exclusively use the `assets` endpoint.
+- **Reasoning:** We previously considered `rates` and `exchanges`. These were discarded to reduce scope and "Data
+  Swamp" risk. `assets` provides 90% of the required business value (Price, Volume, Cap, Rank).
 
 ---
 

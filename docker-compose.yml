@@ -80,7 +80,7 @@ x-airflow-common:
     # AIRFLOW_VAR_{VARIABLE_NAME}: a
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
-    - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
+    - ${AIRFLOW_PROJ_DIR:-.}/logs/airflow:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/snowflake_tf_snow_key.p8:/opt/airflow/snowflake_tf_snow_key.p8
@@ -101,6 +101,7 @@ services:
       - ./dbt:/usr/app
       - ./dbt/profiles.yml:/root/.dbt/profiles.yml
       - ./snowflake_tf_snow_key.p8:/usr/app/snowflake_tf_snow_key.p8
+      - ./logs/dbt:/usr/app/logs
     env_file:
       - .env
 

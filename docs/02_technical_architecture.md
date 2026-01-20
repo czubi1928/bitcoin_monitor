@@ -2,13 +2,61 @@
 
 ## Tech Stack
 
-- **Source:** CoinCap API (REST)
-- **Language:** Python (Ingestion)
-- **Orchestration:** Apache Airflow
-- **Warehouse:** Snowflake (Compute XS)
-- **Transformation:** dbt Core (SQL)
+- **Source:** CoinCap API (REST).
+- **Language:** Python (Ingestion).
+- **Orchestration:** Apache Airflow.
+- **Warehouse:** Snowflake (Compute XS).
+- **Transformation:** dbt Core (SQL).
 
 [//]: # (- **Visualization:** Apache Superset)
+
+---
+
+## API documentation
+
+- **Base URL:** `https://rest.coincap.io/v3/{ENDPOINT}`
+- Endpoints of interest:
+    - `assets`
+
+### Assets Endpoint
+
+- **Name:** `assets`.
+- **Description:** A list of assets.
+- **Response format:** JSON.
+- **Response schema:**
+
+```json
+{
+  "timestamp": 0,
+  "data": [
+    {
+      "id": "string",
+      "rank": "string",
+      "symbol": "string",
+      "name": "string",
+      "supply": "string",
+      "maxSupply": "string",
+      "marketCapUsd": "string",
+      "volumeUsd24Hr": "string",
+      "priceUsd": "string",
+      "changePercent24Hr": "string",
+      "vwap24Hr": "string",
+      "explorer": "string",
+      "tokens": {
+        "additionalProp1": [
+          "string"
+        ],
+        "additionalProp2": [
+          "string"
+        ],
+        "additionalProp3": [
+          "string"
+        ]
+      }
+    }
+  ]
+}
+```
 
 ---
 
@@ -16,31 +64,31 @@
 
 ### Bronze Layer (Raw Ingestion)
 
-- **Table Name:** `bronze.raw_assets`
-- **Source Endpoint:** `/v2/assets` (Top 100 limit).
-- **Format:** JSON (stored in a VARIANT column named `raw_data`).
+- **Table Name:** `ASSETS`.
+- **Source Endpoint:** `assets`.
+- **Format:** JSON (stored in a VARIANT column named `API_RESPONSE`).
 - **Ingest Strategy:** Append-only (Insert new rows every run).
 
 ### Silver Layer (Cleaned History)
 
-- **Table Name:** `silver.silver_asset_history`
+- **Table Name:** `ASSETS_HISTORY`
 - **Transformation Logic:**
-    1. **Flatten:** Extract fields from the `data` array in the JSON.
+    1. **Flatten:** Extract fields from the `API_RESPONSE` array in the JSON.
     2. **Cast Types:**
         - `priceUsd` -> DECIMAL(18,8)
         - `volumeUsd24Hr` -> DECIMAL(24,2)
         - `rank` -> INTEGER
     3. **Timestamp Standardization:** Convert API timestamp to UTC `TIMESTAMP_NTZ`.
     4. **Deduplication:** Use dbt `incremental` strategy.
-        - **Unique Key:** Composite of (`asset_id`, `timestamp`).
+        - **Unique Key:** Composite of (`INGEST_TIMESTAMP`).
         - **Rule:** Do NOT filter data here. Keep full history of all ingested assets.
 
 ### Gold Layer (Business Intelligence)
 
 - **Schema:** Star Schema
-- **Dimension Table:** `dim_assets`
-    - Logic: distinct `asset_id`, `symbol`, `name`.
-- **Fact Table:** `fact_asset_history`
+- **Dimension Table:** `DIM_ASSETS`
+    - Logic: distinct `symbol`, `name`.
+- **Fact Table:** `FACT_ASSETS_HISTORY`.
     - Logic: Join Silver data with Dimensions. Grain = 1 row per asset per timestamp.
 - **Data Marts:**
     - `mart_market_pulse`: Aggregation by timestamp (Total Market Cap, BTC Dominance).
