@@ -13,7 +13,7 @@ SELECT
     f.value:id::STRING AS asset_id,
     f.value:rank::INT AS asset_rank,
     f.value:symbol::STRING AS asset_symbol,
-    f.value: NAME::STRING AS asset_name,
+    f.value:name::STRING AS asset_name,
     f.value:supply::FLOAT AS supply,
     f.value:maxSupply::FLOAT AS max_supply,
     f.value:marketCapUsd::FLOAT AS market_cap_usd,
