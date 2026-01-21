@@ -9,7 +9,7 @@ bitcoin_monitor:
       user: "{{ env_var('SNOWFLAKE_USER') }}"
       role: SYSADMIN
       authenticator: SNOWFLAKE_JWT
-      private_key_path: snowflake_tf_snow_key.p8
+      private_key_path: /keys/snowflake_key.p8
       database: COINCAP_DB
       warehouse: COINCAP_WH
       schema: STAGING

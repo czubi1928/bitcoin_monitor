@@ -26,7 +26,8 @@ COINCAP_API_LIMIT = 10
 # Snowflake configuration
 SNOWFLAKE_USER = os.getenv('SNOWFLAKE_USER')
 SNOWFLAKE_ACCOUNT = os.getenv('SNOWFLAKE_ACCOUNT')
-PRIVATE_KEY_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'snowflake_tf_snow_key.p8'))
+# PRIVATE_KEY_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'keys', 'snowflake_key.p8'))
+PRIVATE_KEY_FILE = '/keys/snowflake_key.p8'
 SNOWFLAKE_CONFIG = {
     'warehouse': 'COINCAP_WH',
     'database': 'COINCAP_DB',

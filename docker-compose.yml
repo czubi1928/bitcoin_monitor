@@ -83,7 +83,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs/airflow:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-    - ${AIRFLOW_PROJ_DIR:-.}/snowflake_tf_snow_key.p8:/opt/airflow/snowflake_tf_snow_key.p8
+    - ${AIRFLOW_PROJ_DIR:-.}/keys:/keys
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -93,6 +93,27 @@ x-airflow-common:
       condition: service_healthy
 
 services:
+  terraform:
+    image: hashicorp/terraform:latest
+#    build:
+#      context: ./containers/terraform
+#      dockerfile: Dockerfile
+    # Map your local project folder to the container's /workspace
+    volumes:
+      - ./terraform:/workspace
+      - ./keys:/keys
+    working_dir: /workspace
+    environment:
+      # This keeps providers in a specific folder so they don't redownload
+      - TF_PLUGIN_CACHE_DIR=/workspace/.terraform.d/plugin-cache
+      - TF_VAR_organization_name=${ORGANIZATION_NAME}
+      - TF_VAR_account_name=${ACCOUNT_NAME}
+    # This allows you to run the container and keep it open if needed
+    #    stdin_open: true
+    #    tty: true
+    # Override entrypoint so we can run multiple commands or use the shell
+#    entrypoint: /bin/sh -c "terraform init && /bin/sh"
+
   dbt-snowflake:
     image: ghcr.io/dbt-labs/dbt-snowflake:1.9.latest
     network_mode: host
@@ -100,7 +121,7 @@ services:
     volumes:
       - ./dbt:/usr/app
       - ./dbt/profiles.yml:/root/.dbt/profiles.yml
-      - ./snowflake_tf_snow_key.p8:/usr/app/snowflake_tf_snow_key.p8
+      - ./keys:/keys
       - ./logs/dbt:/usr/app/logs
     env_file:
       - .env

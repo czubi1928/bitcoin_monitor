@@ -1,5 +1,5 @@
 up:
 	docker compose up --build -d
 
-jupyter:
-	cd notebooks && jupyter notebook
+terraform_apply:
+	docker compose run --rm terraform apply

@@ -15,6 +15,7 @@ variable "account_name" {
 variable "private_key_path" {
   description = "Path to the private key for Snowflake JWT authentication."
   type        = string
+  default     = "/keys/snowflake_key.p8"
 }
 
 # --- Infrastructure Variables ---
