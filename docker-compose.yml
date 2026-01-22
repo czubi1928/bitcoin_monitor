@@ -95,28 +95,19 @@ x-airflow-common:
 services:
   terraform:
     image: hashicorp/terraform:latest
-#    build:
-#      context: ./containers/terraform
-#      dockerfile: Dockerfile
-    # Map your local project folder to the container's /workspace
     volumes:
       - ./terraform:/workspace
       - ./keys:/keys
     working_dir: /workspace
     environment:
-      # This keeps providers in a specific folder so they don't redownload
       - TF_PLUGIN_CACHE_DIR=/workspace/.terraform.d/plugin-cache
       - TF_VAR_organization_name=${ORGANIZATION_NAME}
       - TF_VAR_account_name=${ACCOUNT_NAME}
-    # This allows you to run the container and keep it open if needed
-    #    stdin_open: true
-    #    tty: true
-    # Override entrypoint so we can run multiple commands or use the shell
-#    entrypoint: /bin/sh -c "terraform init && /bin/sh"
 
   dbt:
     image: ghcr.io/dbt-labs/dbt-snowflake:1.9.latest
-    network_mode: host
+    ports:
+      - "8001:8001"
     working_dir: /usr/app
     volumes:
       - ./dbt:/usr/app

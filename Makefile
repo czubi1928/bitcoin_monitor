@@ -1,5 +1,62 @@
-up:
-	docker compose up --build -d
+# --- Variables ---
+DOCKER_COMPOSE = docker compose
+DBT_RUN = $(DOCKER_COMPOSE) run --rm dbt
+DBT_RUN_SERVE = $(DOCKER_COMPOSE) run --rm --service-ports dbt
+TF_RUN  = $(DOCKER_COMPOSE) run --rm terraform
 
-terraform_apply:
-	docker compose run --rm terraform apply
+# --- 1. Environment Management ---
+.PHONY: up
+up:
+	$(DOCKER_COMPOSE) up --build -d
+
+.PHONY: down
+down:
+	$(DOCKER_COMPOSE) down
+
+.PHONY: logs
+logs:
+	$(DOCKER_COMPOSE) logs -f
+
+.PHONY: restart
+restart: down up
+
+# --- 2. Infrastructure (Terraform) ---
+.PHONY: tf-init
+tf-init:
+	$(TF_RUN) init
+
+.PHONY: tf-plan
+tf-plan:
+	$(TF_RUN) plan
+
+.PHONY: tf-apply
+tf-apply:
+	$(TF_RUN) apply -auto-approve
+
+.PHONY: tf-destroy
+tf-destroy:
+	$(TF_RUN) destroy
+
+# --- 3. Transformation (dbt) ---
+.PHONY: dbt-deps
+dbt-deps:
+	$(DBT_RUN) deps
+
+.PHONY: dbt-debug
+dbt-debug:
+	$(DBT_RUN) debug
+
+.PHONY: dbt-build
+dbt-build:
+	$(DBT_RUN) build
+
+.PHONY: dbt-docs
+dbt-docs:
+	$(DBT_RUN) docs generate
+	$(DBT_RUN_SERVE) docs serve --port 8001 --host 0.0.0.0
+
+# --- 4. Expert "Onboarding" Command ---
+# Use this to set up the whole project from zero to hero in one go.
+.PHONY: setup
+setup: tf-init tf-apply up dbt-deps dbt-build
+	@echo "✅ Project is fully deployed and data is flowing!"
