@@ -20,35 +20,45 @@ variable "private_key_path" {
 
 # --- Infrastructure Variables ---
 
-variable "bronze_table_names" {
-  type    = list(string)
-  default = ["ASSET_SNAPSHOTS"] #"EXCHANGES", "MARKETS", "RATES"]
+variable "project_name" {
+  type    = string
+  default = "COINCAP"
 }
 
-variable "shared_bronze_columns" {
-  description = "Standard schema for all Bronze tables"
+variable "environment_schemas" {
+  description = "List of schemas to create"
+  type        = list(string)
+  default     = ["RAW", "STAGING", "INTERMEDIATE", "MART"]
+}
+
+variable "asset_snapshots_columns" {
+  description = "Column definitions for ASSET_SNAPSHOTS table"
+
   type = list(object({
     name     = string
     type     = string
-    nullable = bool
-    default  = optional(string) # Optional: Not all columns need a default
+    nullable = optional(bool, true) # If you forget to add nullable, it defaults to true
     comment  = optional(string)
   }))
 
   default = [
     {
-      name     = "INGEST_TIMESTAMP"
-      type     = "TIMESTAMP_NTZ(9)"
+      name     = "LOAD_TIMESTAMP"
+      type     = "TIMESTAMP_NTZ"
       nullable = false
-      default  = null
-      comment  = "API response timestamp"
+      comment  = "Timestamp of ingestion"
     },
     {
-      name     = "API_RESPONSE"
+      name     = "RAW_DATA"
       type     = "VARIANT"
-      nullable = true # Allow nulls initially if API fails totally, though usually we want data
-      default  = null
-      comment  = "Full JSON response"
+      nullable = true
+      comment  = "Snowflake dynamic JSON type"
+    },
+    {
+      name     = "SOURCE_FILE_NAME"
+      type     = "VARCHAR"
+      nullable = true
+      comment  = "Source metadata"
     }
   ]
 }
