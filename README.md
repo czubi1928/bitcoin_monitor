@@ -3,6 +3,7 @@ prerequisites: Api, terraform installed
 
 prerequisites: step "Create a Service User for Terraform", "Setup Terraform Authentication" from "terraforming-snowflake"
 
+remember about docs crate and serve commands for dbt
 ---
 
 # Bitcoin Monitor - A near real-time Bitcoin price monitoring tool

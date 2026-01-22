@@ -1,0 +1,30 @@
+#version: 2
+#
+#semantic_models:
+#  - name: market_overview_semantic
+#    description: "Semantic layer for global crypto market overview."
+#    model: ref('fct_market_overview')
+#
+#    entities:
+#      - name: snapshot
+#        type: primary
+#
+#    measures:
+#      - name: btc_dominance
+#        description: "The percentage of BTC market cap relative to global cap."
+#        agg: average
+#        expr: btc_dominance_percentage
+#
+#    dimensions:
+#      - name: ingest_timestamp
+#        type: time
+#        type_params:
+#          time_granularity: minute  # Removed is_primary from here
+#
+#metrics:
+#  - name: avg_btc_dominance
+#    label: Average BTC Dominance
+#    description: "Calculated average BTC dominance over time."
+#    type: simple
+#    type_params:
+#      measure: btc_dominance

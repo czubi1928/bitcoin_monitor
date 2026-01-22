@@ -20,6 +20,8 @@ models:
   - name: fct_asset_history
     description: "Final mart for asset history."
     columns:
+      - name: price_change_1h
+        description: "The percentage change in price over the last hour. Used to detect volatility spikes."
       - name: asset_rank
         tests:
           - not_null
