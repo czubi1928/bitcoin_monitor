@@ -50,6 +50,10 @@ dbt-debug:
 dbt-build:
 	$(DBT_RUN) build
 
+.PHONY: dbt-run
+dbt-run:
+	$(DBT_RUN) run
+
 .PHONY: dbt-docs
 dbt-docs:
 	$(DBT_RUN) docs generate
