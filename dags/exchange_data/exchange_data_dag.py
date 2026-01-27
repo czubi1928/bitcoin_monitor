@@ -9,6 +9,8 @@ from typing import Optional, Tuple, Any
 import pendulum
 import requests
 import snowflake.connector
+from airflow.operators.bash import BashOperator
+from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.sdk import dag, task
 from snowflake.connector.connection import SnowflakeConnection
 
@@ -176,12 +178,41 @@ def exchange_data_dag():
         # Close the database connection
         conn.close()
 
+    # dbt_run = DockerOperator(
+    #     task_id='dbt_run',
+    #     image='ghcr.io/dbt-labs/dbt-snowflake:1.9.latest',  # Your built dbt image
+    #     container_name='dbt_container',
+    #     api_version='auto',
+    #     auto_remove='success',  # Delete container after run
+    #     command='run',
+    #     docker_url='unix://var/run/docker.sock',
+    #     network_mode='bridge',  # Ensure it can reach your DB
+    #     mount_tmp_dir=False
+    # )
+
+    # solution_1
+    # dbt_run_task = BashOperator(
+    #     task_id='dbt_run',
+    #     bash_command='docker run --rm dbt_container dbt run',
+    # )
+
+    # solution_2
+    # dbt_run_task = DockerOperator(
+    #     task_id='dbt_run',
+    #     image='ghcr.io/dbt-labs/dbt-snowflake:1.9.latest',
+    #     command='docker compose run --rm dbt',
+    #     volumes=['/var/run/docker.sock:/var/run/docker.sock'],
+    #     network_mode='bridge',
+    # )
+
     # --- Define task dependencies ---
     extracted_data_list = extract_data_from_api_task.expand(endpoint=COINCAP_API_ENDPOINTS)
 
     # Pass the output of the mapped task directly as the argument to the downstream task.
     # This automatically handles XCom aggregation.
     load_data_to_warehouse_task(extracted_data=extracted_data_list)
+
+    # dbt_run_task()
 
 
 exchange_data_dag()

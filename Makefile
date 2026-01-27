@@ -4,7 +4,7 @@ DBT_RUN = $(DOCKER_COMPOSE) run --rm dbt
 DBT_RUN_SERVE = $(DOCKER_COMPOSE) run --rm --service-ports dbt
 TF_RUN  = $(DOCKER_COMPOSE) run --rm terraform
 
-# --- 1. Environment Management ---
+# --- Environment Management ---
 .PHONY: up
 up:
 	$(DOCKER_COMPOSE) up --build -d
@@ -20,7 +20,7 @@ logs:
 .PHONY: restart
 restart: down up
 
-# --- 2. Infrastructure (Terraform) ---
+# --- Infrastructure (Terraform) ---
 .PHONY: tf-init
 tf-init:
 	$(TF_RUN) init
@@ -37,7 +37,7 @@ tf-apply:
 tf-destroy:
 	$(TF_RUN) destroy
 
-# --- 3. Transformation (dbt) ---
+# --- Transformation (dbt) ---
 .PHONY: dbt-deps
 dbt-deps:
 	$(DBT_RUN) deps
@@ -59,8 +59,8 @@ dbt-docs:
 	$(DBT_RUN) docs generate
 	$(DBT_RUN_SERVE) docs serve --port 8001 --host 0.0.0.0
 
-# --- 4. Expert "Onboarding" Command ---
+# --- Expert "Onboarding" Command ---
 # Use this to set up the whole project from zero to hero in one go.
-.PHONY: setup
+#.PHONY: setup
 setup: tf-init tf-apply up dbt-deps dbt-build
 	@echo "✅ Project is fully deployed and data is flowing!"
