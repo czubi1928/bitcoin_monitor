@@ -107,7 +107,7 @@ services:
 
   dbt:
     image: ghcr.io/dbt-labs/dbt-snowflake:1.9.latest
-    container_name: dbt_container
+#    container_name: dbt_container
     ports:
       - '8001:8001'
     working_dir: /usr/app
@@ -129,7 +129,6 @@ services:
       - '8088:8088'
     volumes:
       - ./data/superset/superset_home:/app/superset_home
-      - ./data/superset/data:/app/data
       - ./keys/snowflake_key.p8:/app/keys/snowflake_key.p8
     environment:
       - SUPERSET_SECRET_KEY=${SUPERSET_SECRET_KEY}

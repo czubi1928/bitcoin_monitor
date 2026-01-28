@@ -7,6 +7,10 @@ sources:
     tables:
       - name: assets_snapshots
         description: "Raw 5-minute snapshots of crypto assets from CoinCap API."
+        loaded_at_field: LOAD_TIMESTAMP
+        freshness:
+          warn_after: { count: 10, period: minute }
+          error_after: { count: 15, period: minute }
         columns:
           - name: LOAD_TIMESTAMP
             description: "The time the data was ingested."

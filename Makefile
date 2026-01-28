@@ -1,8 +1,8 @@
 # --- Variables ---
 DOCKER_COMPOSE = docker compose
-DBT_RUN = $(DOCKER_COMPOSE) run --rm dbt
-DBT_RUN_SERVE = $(DOCKER_COMPOSE) run --rm --service-ports dbt
-TF_RUN  = $(DOCKER_COMPOSE) run --rm terraform
+DBT_RUN = $(DOCKER_COMPOSE) run dbt
+DBT_RUN_SERVE = $(DOCKER_COMPOSE) run --service-ports dbt
+TF_RUN  = $(DOCKER_COMPOSE) run terraform
 
 # --- Environment Management ---
 .PHONY: up
@@ -50,6 +50,10 @@ dbt-debug:
 dbt-build:
 	$(DBT_RUN) build
 
+.PHONY: elementary-init
+elementary-init:
+	$(DBT_RUN) run --select elementary
+
 .PHONY: dbt-run
 dbt-run:
 	$(DBT_RUN) run
@@ -58,6 +62,18 @@ dbt-run:
 dbt-docs:
 	$(DBT_RUN) docs generate
 	$(DBT_RUN_SERVE) docs serve --port 8001 --host 0.0.0.0
+
+# --- Observability (dbt source freshness and tests) ---
+.PHONY: observe-freshness
+observe-freshness:
+	$(DBT_RUN) source freshness
+
+.PHONY: observe-tests
+observe-tests:
+	$(DBT_RUN) test --select tag:observability
+
+.PHONY: observe-all
+observe-all: observe-freshness observe-tests
 
 # --- Expert "Onboarding" Command ---
 # Use this to set up the whole project from zero to hero in one go.

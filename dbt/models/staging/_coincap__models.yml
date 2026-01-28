@@ -3,19 +3,28 @@ version: 2
 models:
   - name: stg_coincap__assets
     description: "Cleaned asset data."
+    tests:
+      - dbt_utils.at_least_one:
+          column_name: asset_id
+      - dbt_expectations.expect_table_row_count_to_be_between:
+          min_value: 2
+          # max_value: 2000
     columns:
       - name: asset_id
         tests:
-          - not_null
+          - not_null:
+              tags: ['observability']
           # Note: We don't use 'unique' here because this is time-series data.
           # The same asset_id appears every 5 minutes.
 
       - name: price_usd
         tests:
-          - not_null
+          - not_null:
+              tags: ['observability']
           # A custom test to ensure prices aren't negative (bad data)
           - dbt_utils.accepted_range:
               min_value: 0
+              tags: ['observability']
 
   - name: fct_asset_history
     description: "Final mart for asset history."
@@ -24,7 +33,9 @@ models:
         description: "The percentage change in price over the last hour. Used to detect volatility spikes."
       - name: asset_rank
         tests:
-          - not_null
+          - not_null:
+              tags: ['observability']
           - dbt_utils.accepted_range:
               min_value: 1
               max_value: 100 # Assuming we only care about top 100
+              tags: ['observability']
