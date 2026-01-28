@@ -96,6 +96,7 @@ x-airflow-common:
 services:
   terraform:
     image: hashicorp/terraform:latest
+    profiles: ["cli"]
     volumes:
       - ./terraform:/workspace
       - ./keys:/keys
@@ -108,6 +109,7 @@ services:
   dbt:
     image: ghcr.io/dbt-labs/dbt-snowflake:1.9.latest
 #    container_name: dbt_container
+    profiles: ["cli"]
     ports:
       - '8001:8001'
     working_dir: /usr/app

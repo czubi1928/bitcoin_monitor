@@ -1,8 +1,8 @@
 # --- Variables ---
 DOCKER_COMPOSE = docker compose
-DBT_RUN = $(DOCKER_COMPOSE) run dbt
-DBT_RUN_SERVE = $(DOCKER_COMPOSE) run --service-ports dbt
-TF_RUN  = $(DOCKER_COMPOSE) run terraform
+DBT = $(DOCKER_COMPOSE) run --rm dbt
+DBT_SERVE = $(DOCKER_COMPOSE) run --service-ports dbt
+TF_RUN  = $(DOCKER_COMPOSE) run --rm terraform
 
 # --- Environment Management ---
 .PHONY: up
@@ -40,41 +40,41 @@ tf-destroy:
 # --- Transformation (dbt) ---
 .PHONY: dbt-deps
 dbt-deps:
-	$(DBT_RUN) deps
+	$(DBT) deps
 
 .PHONY: dbt-debug
 dbt-debug:
-	$(DBT_RUN) debug
+	$(DBT) debug
 
 .PHONY: dbt-build
 dbt-build:
-	$(DBT_RUN) build
+	$(DBT) build
 
 .PHONY: elementary-init
 elementary-init:
-	$(DBT_RUN) run --select elementary
+	$(DBT) run --select elementary
 
 .PHONY: dbt-snapshot
 dbt-snapshot:
-	$(DBT_RUN) snapshot
+	$(DBT) snapshot
 
 .PHONY: dbt-run
 dbt-run:
-	$(DBT_RUN) run
+	$(DBT) run
 
 .PHONY: dbt-docs
 dbt-docs:
-	$(DBT_RUN) docs generate
-	$(DBT_RUN_SERVE) docs serve --port 8001 --host 0.0.0.0
+	$(DBT) docs generate
+	$(DBT_SERVE) docs serve --port 8001 --host 0.0.0.0
 
 # --- Observability (dbt source freshness and tests) ---
 .PHONY: observe-freshness
 observe-freshness:
-	$(DBT_RUN) source freshness
+	$(DBT) source freshness
 
 .PHONY: observe-tests
 observe-tests:
-	$(DBT_RUN) test --select tag:observability
+	$(DBT) test --select tag:observability
 
 .PHONY: observe-all
 observe-all: observe-freshness observe-tests
