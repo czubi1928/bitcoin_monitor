@@ -20,3 +20,19 @@
 
 - **Decision:** While the architecture supports 5-minute ingestion, we may throttle Airflow to hourly runs during
   development to save Snowflake credits. The code will remain agnostic to this frequency.
+
+---
+
+## Advanced Modeling: SCD Type 2
+
+- **Decision:** Implemented dbt Snapshots for Asset Metadata.
+- **Reasoning:** In crypto, metadata (ranks, symbols) changes frequently. By using SCD Type 2, we preserve historical
+  state, allowing for "Point-in-Time" analysis which is critical for backtesting trading strategies.
+
+---
+
+## Engineering Standards: DRY Macros
+
+- **Decision:** All currency and numeric cleaning is handled via centralized Macros.
+- **Reasoning:** Ensures uniform data types across the entire warehouse and reduces technical debt during schema
+  evolution.

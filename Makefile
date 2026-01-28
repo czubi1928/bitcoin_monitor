@@ -54,6 +54,10 @@ dbt-build:
 elementary-init:
 	$(DBT_RUN) run --select elementary
 
+.PHONY: dbt-snapshot
+dbt-snapshot:
+	$(DBT_RUN) snapshot
+
 .PHONY: dbt-run
 dbt-run:
 	$(DBT_RUN) run
