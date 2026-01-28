@@ -38,6 +38,9 @@ data from a public API, processes it, and visualizes the trends using interactiv
 # Gain knowledge
 - Data Modeling
 
+# Lessons Learned / Hardest Bug
+- .
+
 # To-Do
 - [] Add transformation to DAG in Airflow
 
