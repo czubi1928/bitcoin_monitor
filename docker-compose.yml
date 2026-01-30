@@ -77,14 +77,13 @@ x-airflow-common:
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     # Best practice: Move secrets/keys to Airflow Variables or Connections.
-    # AIRFLOW_VAR_{VARIABLE_NAME}: a
+    # AIRFLOW_VAR_{VARIABLE_NAME}:
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs/airflow:/opt/airflow/logs
-    - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
-    - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/containers/airflow/config:/opt/airflow/config
+    - ${AIRFLOW_PROJ_DIR:-.}/containers/airflow/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/keys:/keys
-    - /var/run/docker.sock:/var/run/docker.sock
   user: '${AIRFLOW_UID:-50000}:0'
   depends_on:
     &airflow-common-depends-on
@@ -107,7 +106,6 @@ services:
       - TF_VAR_account_name=${ACCOUNT_NAME}
 
   dbt:
-    # image: ghcr.io/dbt-labs/dbt-snowflake:1.9.latest
     build:
       context: ./containers/dbt
       dockerfile: Dockerfile
@@ -123,7 +121,6 @@ services:
     environment:
       - SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT}
       - SNOWFLAKE_USER=${SNOWFLAKE_USER}
-  #    entrypoint: /bin/bash
 
   superset:
     build:
@@ -133,7 +130,7 @@ services:
     ports:
       - '8088:8088'
     volumes:
-      - ./data/superset/superset_home:/app/superset_home
+      - ./containers/superset/superset_home:/app/superset_home
       - ./keys/snowflake_key.p8:/app/keys/snowflake_key.p8
     environment:
       - SUPERSET_SECRET_KEY=${SUPERSET_SECRET_KEY}
