@@ -1,3 +1,2 @@
 pandas
 snowflake-connector-python
-docker-py

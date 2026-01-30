@@ -1,4 +1,4 @@
-FROM ghcr.io/dbt-labs/dbt-snowflake:1.9.latest
+FROM ghcr.io/dbt-labs/dbt-snowflake:latest
 
 COPY requirements.txt /requirements.txt
 
