@@ -11,5 +11,4 @@
 }}
 
 select * from {{ ref('stg_coincap__assets') }}
-
 {% endsnapshot %}
