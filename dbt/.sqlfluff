@@ -1,0 +1,21 @@
+[sqlfluff]
+# SQL dialect used in this repo
+dialect = snowflake
+# Project-preferred line length
+max_line_length = 120
+# Use dbt templater for parsing Jinja/dbt models
+templater = dbt
+# Exclude common build/virtualenv folders
+exclude = target, .venv, venv, .git, dbt_packages
+
+[sqlfluff:indentation]
+# Indentation settings (moved out of deprecated rules section)
+tab_space_size = 4
+
+[sqlfluff:templater:dbt]
+# Path to the dbt project directory (relative to repo root)
+project_dir = .
+# If you keep your dbt profiles in a repo folder, point to it; otherwise SQLFluff will use ~/.dbt
+profiles_dir = /root/.dbt
+# Optional: set a profiles target (matches profiles.yml "target")
+profiles_target = default

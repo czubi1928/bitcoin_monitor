@@ -42,7 +42,9 @@ data from a public API, processes it, and visualizes the trends using interactiv
 - .
 
 # To-Do
-- [] Add transformation to DAG in Airflow
+- [] Add `dbt` transformation task to DAG in Airflow
+- [] Implement CI/CD pipeline for automated deployments
+- [] Add alerting mechanism for significant price changes
 
 # Inspiration
 

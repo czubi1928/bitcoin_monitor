@@ -10,8 +10,8 @@ bitcoin_monitor:
       role: SYSADMIN
       authenticator: SNOWFLAKE_JWT
       private_key_path: /keys/snowflake_key.p8
-      database: COINCAP_DB
       warehouse: COINCAP_WH
+      database: COINCAP_DB
       schema: STAGING
       threads: 4
       client_session_keep_alive: False

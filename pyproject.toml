@@ -1,10 +1,18 @@
 [project]
 name = "bitcoin_monitor"
-version = "0.0.0"
-description = "Data engineering portfolio project"
-requires-python = "3.13"
+description = "Data engineering portfolio project to monitor Bitcoin prices and send alerts."
+authors = [
+    { name = "Patryk Czubinski", email = "czubi1928@gmail.com" }
+]
+version = "0.1.0"
+requires-python = ">=3.13"
 readme = "README.md"
-#dependencies = ["requests>=2.28.0"]
+#dependencies = [
+#    "pre-commit>=4.5.1"
+#]
+
+[tool.setuptools.packages.find]
+include = ["bitcoin_monitor"]
 
 #[tool.ruff]
 #line-length = 88
