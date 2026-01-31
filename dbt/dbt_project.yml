@@ -4,16 +4,16 @@ config-version: 2
 
 profile: bitcoin_monitor
 
-model-paths: [ "models" ]
-analysis-paths: [ "analyses" ]
-test-paths: [ "tests" ]
-seed-paths: [ "seeds" ]
-macro-paths: [ "macros" ]
-snapshot-paths: [ "snapshots" ]
+model-paths: [ 'models' ]
+analysis-paths: [ 'analyses' ]
+test-paths: [ 'tests' ]
+seed-paths: [ 'seeds' ]
+macro-paths: [ 'macros' ]
+snapshot-paths: [ 'snapshots' ]
 
 clean-targets:
-  - "target"
-  - "dbt_packages"
+  - 'target'
+  - 'dbt_packages'
 
 models:
   bitcoin_monitor:
@@ -22,7 +22,7 @@ models:
     staging:
       +materialized: view
       +schema: staging
-      +tags: [ "api_data" ]
+      +tags: [ 'api_data' ]
 
     # --- Intermediate Layer ---
     # Materialized as tables because they contain complex window functions (LAG)

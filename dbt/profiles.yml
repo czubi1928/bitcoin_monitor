@@ -5,8 +5,8 @@ bitcoin_monitor:
   outputs:
     dev:
       type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      account: '{{ env_var("SNOWFLAKE_ACCOUNT") }}'
+      user: '{{ env_var("SNOWFLAKE_USER") }}'
       role: SYSADMIN
       authenticator: SNOWFLAKE_JWT
       private_key_path: /keys/snowflake_key.p8
