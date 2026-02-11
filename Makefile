@@ -41,7 +41,7 @@ terraform_plan:
 
 .PHONY: terraform_apply
 terraform_apply:
-	$(TF_RUN) apply # -auto-approve
+	$(TF_RUN) apply
 
 .PHONY: terraform_destroy
 terraform_destroy:
