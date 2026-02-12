@@ -16,6 +16,9 @@ clean-targets:
   - 'dbt_packages'
 
 models:
+  elementary:
+    +schema: "elementary"
+
   bitcoin_monitor:
     # --- Staging Layer ---
     # Materialized as views because they are simple cleaning steps

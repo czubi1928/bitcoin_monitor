@@ -15,3 +15,27 @@ bitcoin_monitor:
       schema: STAGING
       threads: 4
       client_session_keep_alive: False
+
+
+## SNOWFLAKE ##
+## By default, edr expects the profile name 'elementary'.      ##
+## Configure the database and schema of elementary models.     ##
+## Check where 'elementary_test_results' is to find it.        ##
+
+elementary:
+  outputs:
+    default:
+      type: snowflake
+      account: '{{ env_var("SNOWFLAKE_ACCOUNT") }}'
+      user: '{{ env_var("SNOWFLAKE_USER") }}'
+      role: SYSADMIN
+
+      ## Keypair auth (recommended) ##
+      private_key_path: /keys/snowflake_key.p8
+      # or private_key instead of private_key_path
+      # private_key_passphrase: [passphrase for the private key, if key is encrypted]
+
+      database: COINCAP_DB
+      warehouse: COINCAP_WH
+      schema: ELEMENTARY
+      threads: 4

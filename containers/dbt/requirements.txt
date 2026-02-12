@@ -1,2 +1,4 @@
 sqlfluff
 sqlfluff-templater-dbt
+elementary-data
+elementary-data[snowflake]

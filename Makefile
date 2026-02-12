@@ -73,6 +73,10 @@ dbt_snapshot:
 dbt_run:
 	$(DBT) run
 
+.PHONY: dbt_test
+dbt_test:
+	$(DBT) test
+
 .PHONY: dbt_docs_generate
 dbt_docs_generate:
 	$(DBT) docs generate
@@ -80,6 +84,10 @@ dbt_docs_generate:
 .PHONY: dbt_docs_serve
 dbt_docs_serve:
 	$(DBT_SERVE) docs serve --port 8001 --host 0.0.0.0
+
+.PHONY: dbt_entrypoint
+dbt_entrypoint:
+	docker-compose run --entrypoint bash dbt
 
 
 # --- Observability ---
